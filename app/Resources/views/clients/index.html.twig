@@ -17,7 +17,7 @@
           </thead>
           {% for client in clients %}
               <tr>
-                <td>{{ client.title | capitalize }}. {{ client.name }} {{ client.last_name }}</td>
+                <td>{{ client.title | capitalize }}. {{ client.name }} {{ client.lastName }}</td>
                 <td>{{ client.email }}</td>
                 <td>
                   <a class="hollow button" href="{{ path("modify_clients", {"id_client" : client.id}) }}">EDIT</a>

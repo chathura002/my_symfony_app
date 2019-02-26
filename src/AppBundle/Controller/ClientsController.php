@@ -6,42 +6,10 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use AppBundle\Entity\Client;
 
 class ClientsController extends Controller
 {
-
-    private $client_data = [
-        [  'id' => 0 , 
-            'title' => 'mr', 
-            'name' => 'Roy', 
-            'last_name' => 'Adams', 
-            'address' => '2872 Marquette Street',
-            'zip_code' => '10312',
-            'city' => 'New York City',
-            'state' => 'NY',
-            'email' => 'radams1v@example.com' 
-        ],
-        [  'id' => 1 , 
-            'title' => 'mrs', 
-            'name' => 'Bonnie', 
-            'last_name' => 'Clark', 
-            'address' => '4 Porter Avenue',
-            'zip_code' => '80028',
-            'city' => 'Louisville',
-            'state' => 'CO',
-            'email' => 'bclark6@example.com' 
-        ],
-        [  'id' => 2 , 
-            'title' => 'ms', 
-            'name' => 'Carol', 
-            'last_name' => 'Shaw', 
-            'address' => '650 Grover Alley',
-            'zip_code' => '30305',
-            'city' => 'Atlanta',
-            'state' => 'GA',
-            'email' => 'cshaw@example.com' 
-        ]
-    ];
 
 private $titles = ['mr', 'ms', 'mrs', 'dr', 'mx'];
     /**
@@ -49,7 +17,8 @@ private $titles = ['mr', 'ms', 'mrs', 'dr', 'mx'];
      **/
     public function showIndex(){
         $data=[];     
-        $data['clients']=$this->client_data;
+        $data['clients']=$this->getDoctrine()->getRepository('AppBundle:Client')->findAll();
+        //var_dump($data['clients']);
         return $this->render('clients/index.html.twig',$data);
     }
 
@@ -59,9 +28,55 @@ private $titles = ['mr', 'ms', 'mrs', 'dr', 'mx'];
     public function showDetails(Request $request, $id_client){
         $data=[];
         $data['mode'] = "modify";
-        $data['clients']=$this->client_data;
-        $data['form'] = $this->client_data[$id_client];
-        $data['titles'] = $this->titles;
+        $client_repo=$this->getDoctrine()->getRepository('AppBundle:Client');
+        $form = $this->createFormBuilder()
+                    ->add('name')
+                    ->add('last_name')
+                    ->add('title')
+                    ->add('address')
+                    ->add('zip_code')
+                    ->add('city')
+                    ->add('state')
+                    ->add('email')
+                    ->getForm()
+        ;
+        $form->handleRequest( $request );
+        if($form->isSubmitted()){
+            $form_data = $form->getData();
+            $data['form'] = $form_data;
+            $client = $client_repo->find($id_client);
+
+            $client_data['id']=$client->getId();
+            $client_data['title']=$client->getTitle();
+            $client_data['name']=$client->getName();
+            $client_data['last_name']=$client->getLastName();
+            $client_data['address']=$client->getAddress();
+            $client_data['zip_code']=$client->getZipCode();
+            $client_data['city']=$client->getCity();
+            $client_data['state']=$client->getState();
+            $client_data['email']=$client->getEmail();
+
+            $em = $this->getDoctrine()->getManager();
+            $em->flush();
+            return $this->redirectToRoute('index_clients');
+
+        } else {
+
+            $client = $client_repo->find($id_client);
+
+            $client_data['id']=$client->getId();
+            $client_data['title']=$client->getTitle();
+            $client_data['name']=$client->getName();
+            $client_data['last_name']=$client->getLastName();
+            $client_data['address']=$client->getAddress();
+            $client_data['zip_code']=$client->getZipCode();
+            $client_data['city']=$client->getCity();
+            $client_data['state']=$client->getState();
+            $client_data['email']=$client->getEmail();
+
+            $data['form'] = $client_data;
+            $data['titles'] = $this->titles;
+        }
         return $this->render('clients/form.html.twig',$data);
     }
 
@@ -74,6 +89,38 @@ private $titles = ['mr', 'ms', 'mrs', 'dr', 'mx'];
         $data['titles'] = $this->titles;
         $data['form'] = [];
         $data['form']['title'] = '';
+        $form = $this->createFormBuilder()
+                    ->add('name')
+                    ->add('last_name')
+                    ->add('title')
+                    ->add('address')
+                    ->add('zip_code')
+                    ->add('city')
+                    ->add('state')
+                    ->add('email')
+                    ->getForm()
+        ;
+        $form->handleRequest( $request );
+        if($form->isSubmitted()){
+            $form_data = $form->getData();
+            $data['form'] = $form_data;
+            
+            $client = new Client();
+            $client->setTitle($form_data['title']);
+            $client->setName($form_data['name']);
+            $client->setLastName($form_data['last_name']);
+            $client->setAddress($form_data['address']);
+            $client->setZipCode($form_data['zip_code']);
+            $client->setCity($form_data['city']);
+            $client->setState($form_data['state']);
+            $client->setEmail($form_data['email']);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($client);
+            $em->flush();
+            return $this->redirectToRoute('index_clients');
+
+        }
         return $this->render('clients/form.html.twig',$data);
     }
 }
