@@ -44,18 +44,17 @@ private $titles = ['mr', 'ms', 'mrs', 'dr', 'mx'];
         if($form->isSubmitted()){
             $form_data = $form->getData();
             $data['form'] = $form_data;
+            $data['titles'] = $this->titles;
             $client = $client_repo->find($id_client);
 
-            $client_data['id']=$client->getId();
-            $client_data['title']=$client->getTitle();
-            $client_data['name']=$client->getName();
-            $client_data['last_name']=$client->getLastName();
-            $client_data['address']=$client->getAddress();
-            $client_data['zip_code']=$client->getZipCode();
-            $client_data['city']=$client->getCity();
-            $client_data['state']=$client->getState();
-            $client_data['email']=$client->getEmail();
-
+            $client->setTitle($form_data['title']);
+            $client->setName($form_data['name']);
+            $client->setLastName($form_data['last_name']);
+            $client->setAddress($form_data['address']);
+            $client->setZipCode($form_data['zip_code']);
+            $client->setCity($form_data['city']);
+            $client->setState($form_data['state']);
+            $client->setEmail($form_data['email']);
             $em = $this->getDoctrine()->getManager();
             $em->flush();
             return $this->redirectToRoute('index_clients');
@@ -122,5 +121,15 @@ private $titles = ['mr', 'ms', 'mrs', 'dr', 'mx'];
 
         }
         return $this->render('clients/form.html.twig',$data);
+    }
+
+    /** 
+    * @Route("/github")
+    **/
+    public function gitHub()
+    {
+        $client = new \GuzzleHttp\Client();
+        $res = $client->request("GET","https://api.github.com/users/chathura002");
+        return new Response("<pre>" . $res->getBody() . "</pre>");
     }
 }
